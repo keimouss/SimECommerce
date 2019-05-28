@@ -7,8 +7,13 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SimECommerce.Application.Repos;
+using SimECommerce.Application.Services;
+using SimECommerce.Application.Services.Core;
+using SimECommerce.DAL.EF;
 
 namespace SimECommerce.Web
 {
@@ -30,8 +35,13 @@ namespace SimECommerce.Web
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
+            services.AddEntityFrameworkSqlServer().AddDbContext<SimECommerceContext>(options =>
+            options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddScoped<IRegistrationService, SimECommerceRegistrationService>();
+            services.AddScoped<IUoW,SimECommerceUoW>();
+            services.AddScoped<IUserRepo, UserRepo>();
 
-
+            services.AddMvc();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 
@@ -52,7 +62,7 @@ namespace SimECommerce.Web
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseCookiePolicy();
-
+                                                                                                          
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
